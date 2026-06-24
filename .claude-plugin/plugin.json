@@ -1,0 +1,12 @@
+{
+  "name": "til",
+  "version": "0.1.0",
+  "description": "Interactive TIL (Today I Learned) writer for Obsidian vault. Guides you through Q&A to create structured notes in 5-10 minutes.",
+  "author": {
+    "name": "R-Jelly",
+    "url": "https://github.com/royaljelly"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/royaljelly/til-plugin",
+  "keywords": ["til", "obsidian", "notes", "learning", "journal"]
+}
