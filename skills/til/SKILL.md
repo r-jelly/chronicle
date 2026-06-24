@@ -126,13 +126,13 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 마지막 질문을 마친 후 또는 8개 질문에 도달하면:
 
 1. 대화 전체를 바탕으로 마크다운 초안 생성
-2. 주제명 자동 생성 (대화 내용 기반 3~5단어, 공백은 `-`)
-3. 오늘 날짜 확인 (`date +%Y-%m-%d`)
+2. 오늘 날짜 확인 (`date +%Y-%m-%d`)
+3. 주제명 자동 생성 (대화 내용 기반 3~5단어, 소문자, 공백은 `-`, 한글 그대로)
 4. 채팅창에 다음 형식으로 출력:
 
 ```
 ---
-📄 TIL 초안 — 파일명: `<주제>(YYYY-MM-DD).md`
+📄 TIL 초안 — 파일명: `YYYY-MM-DD-주제.md`
 ---
 [마크다운 전체 내용]
 ---
@@ -144,7 +144,7 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 유저가 확정하면:
 1. 세션 파일에서 vault root 읽기: `cat ~/.claude/til-session`
 2. `til/` 서브폴더 없으면 생성: `mkdir -p <vault_root>/til`
-3. Write tool로 `<vault_root>/til/<주제>(YYYY-MM-DD).md` 에 저장
+3. Write tool로 `<vault_root>/til/YYYY-MM-DD-주제.md` 에 저장
 4. 세션 플래그 삭제: Bash로 `rm ~/.claude/til-session` 실행
 5. 저장 완료 알림: "✓ `<vault_root>/til/<파일명>` 저장됨"
 
