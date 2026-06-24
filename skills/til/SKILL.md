@@ -109,7 +109,7 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 4. 다음에 달리 시도해보고 싶은 것은요? (Try)
 
 **Q&A 규칙:**
-- 총 5~8개 질문, 세션 전체 5~10분
+- 질문 수 제한 없음. 다룬 내용의 깊이가 충분하다고 판단되면 초안 생성으로 넘어감
 - 이미 답된 내용은 건너뜀
 - 컨텍스트에 `[Related notes from vault]` 가 주입되면: 관련 기존 TIL을 자연스럽게 언급하며 연결 질문 추가
 - 짧은 답변 → 파고들기, 풍부한 답변 → 다음으로 넘어가기
