@@ -7,86 +7,108 @@
 
 # 📖 Chronicle
 
-**기록을 쌓아가는 Claude Code 개인 스킬 플러그인**
+**A Claude Code plugin for building your personal record — one conversation at a time.**
 
-*당신이 배운 것, 만든 것, 고민한 것을 Claude와 함께 노트로.*
+*What you learned, what you built, what you thought through — turned into structured notes with Claude.*
+
+[한국어](README.ko.md)
 
 </div>
 
 ---
 
-## ✨ 왜 Chronicle인가
+## ✨ Why Chronicle
 
-매일 무언가를 배우지만, 정리하지 않으면 사라진다. Chronicle은 Claude가 직접 질문을 던지고 대화를 이끌어서 — 당신은 그냥 답하기만 하면 — 구조화된 마크다운 노트가 완성된다. Obsidian 볼트 또는 임의의 폴더에 저장된다.
+Every day you learn something. Most of it disappears because writing it down feels like work. Chronicle flips that: Claude asks the questions, you just answer, and a structured markdown note is ready to save.
 
 ---
 
-## 🚀 설치
+## 🚀 Installation
 
 ```bash
-# 플러그인 설치
 claude plugin install https://github.com/r-jelly/chronicle
 
-# 설치 후 리로드
 /reload-plugins
 ```
 
-> **권장**: ripgrep이 있으면 볼트 내 관련 노트 검색이 빨라진다.
+> **Recommended**: install ripgrep for faster vault search.
 > ```bash
 > brew install ripgrep
 > ```
 
 ---
 
-## ⚙️ 공통 동작 방식
+## 🛠 Skills
 
-Chronicle의 스킬들은 Claude Code 훅 시스템으로 세션 전반을 관리한다.
+### `/til` — Today I Learned
+
+Claude guides you through a short Q&A and writes a TIL note from your answers.
 
 ```
-SessionStart ──→ 이전 저장 경로 로드 / 미완료 세션 감지
-     │
-     ▼
-  스킬 실행 (/til, /retro, ...)
-     │
-     ▼
-UserPromptSubmit ──→ 답변마다 볼트 검색 → 관련 기존 노트를 컨텍스트에 주입
-     │
-     ▼
-  초안 생성 → 저장 경로 확인 → 저장
+/til
+  └─ Claude: "What do you want to record as a TIL today?"
+       └─ You: answer
+            └─ Claude: follow-up questions, one at a time
+                 └─ Draft preview with save path → confirm → saved ✓
 ```
 
-| 훅 | 역할 |
-|----|------|
-| `SessionStart` | 이전 저장 경로 자동 로드. 미완료 세션이 있으면 이어할지 알림 |
-| `UserPromptSubmit` | 스킬 세션 중 활성화. 볼트 전체를 검색해 관련 노트를 Claude 컨텍스트에 주입 |
+**What Claude handles automatically:**
+- Detects note type from your first answer (concept learned / implementation / bug fix / tech comparison / retrospective)
+- Detects language (Korean or English) and stays consistent throughout
+- Searches your vault for related past notes and weaves them into questions
+- Resolves save location from config — shows it in the draft, change only if needed
 
 ---
 
-## 📁 구조
+## ⚙️ How It Works
+
+Chronicle uses Claude Code's hook system to manage sessions end-to-end.
+
+```
+SessionStart ──→ Load previous save path / detect incomplete session
+     │
+     ▼
+  Skill runs (/til, ...)
+     │
+     ▼
+UserPromptSubmit ──→ Search vault on every answer → inject related notes into context
+     │
+     ▼
+  Draft generated → save path shown → confirmed → saved
+```
+
+| Hook | Role |
+|------|------|
+| `SessionStart` | Loads saved vault path. Alerts if a previous session was not completed. |
+| `UserPromptSubmit` | Active during skill sessions. Searches the entire vault and injects related notes as context. |
+
+---
+
+## 📁 Structure
 
 ```
 chronicle/
 ├── .claude-plugin/
 │   └── plugin.json
 ├── commands/
-│   └── til.md               # /til 슬래시 커맨드
+│   └── til.md
 ├── skills/
 │   └── til/
-│       └── SKILL.md         # Claude 행동 지침
+│       └── SKILL.md
 ├── hooks/
 │   ├── hooks.json
-│   ├── til-context.sh       # UserPromptSubmit: 볼트 검색
-│   └── til-sessionstart.sh  # SessionStart: 설정 로드
+│   ├── til-context.sh
+│   └── til-sessionstart.sh
 └── README.md
 ```
 
 ---
 
-## 💾 요구사항
+## 💾 Requirements
 
 - [Claude Code](https://claude.ai/code)
-- 저장 폴더 (Obsidian 볼트 또는 임의 폴더)
-- ripgrep 권장: `brew install ripgrep`
+- A save folder (Obsidian vault or any directory)
+- ripgrep recommended: `brew install ripgrep`
 
 ---
 
