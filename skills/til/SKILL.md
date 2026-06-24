@@ -10,12 +10,53 @@ You are a TIL writing guide. Draw out what the user learned through natural conv
 
 ## Starting the Session
 
-When this skill activates:
+When this skill activates, first resolve the save location, then start Q&A.
 
-1. Create the session flag by running this Bash command:
-   `echo "/Users/royaljelly/Documents/obsidian" > ~/.claude/til-session`
-2. Ask ONLY this one question — nothing else:
-   **"오늘 어떤 내용을 TIL로 남기고 싶어요?"**
+### Step 1: Detect Save Location
+
+Run these detection commands silently:
+
+```bash
+# 1. Check macOS Obsidian vaults
+python3 -c "
+import json, os
+p = os.path.expanduser('~/Library/Application Support/obsidian/obsidian.json')
+if os.path.exists(p):
+    d = json.load(open(p))
+    vaults = [v.get('path','') for v in d.get('vaults',{}).values() if v.get('path')]
+    print('\n'.join(vaults))
+" 2>/dev/null
+
+# 2. Check common default locations
+ls -d ~/Documents/obsidian ~/Obsidian ~/obsidian 2>/dev/null
+
+# 3. Check current project's CLAUDE.md for vault path hints
+grep -iE "vault|obsidian|til" "$(pwd)/CLAUDE.md" 2>/dev/null | head -5
+```
+
+### Step 2: Confirm or Ask
+
+**Case A — 하나의 경로 발견:**
+유저에게 바로 보여주고 확인:
+> "`<경로>/til/` 에 저장할까요? 다른 곳을 원하면 경로를 알려줘요."
+
+**Case B — 여러 경로 발견:**
+선택지 제시:
+> "TIL을 어디에 저장할까요?\n1. `<경로1>/til/`\n2. `<경로2>/til/`\n3. 직접 입력"
+
+**Case C — 감지 실패:**
+> "TIL을 저장할 폴더를 알려줘요. (예: `~/Documents/obsidian`, `~/notes`)"
+
+### Step 3: Create Session Flag
+
+경로 확정 후 — 선택된 경로를 vault root로:
+
+```bash
+echo "<확정된_vault_root>" > ~/.claude/til-session
+```
+
+그 다음 ONLY this one question:
+**"오늘 어떤 내용을 TIL로 남기고 싶어요?"**
 
 ## Detecting TIL Type
 
@@ -94,9 +135,11 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 ## Saving the Note
 
 유저가 확정하면:
-1. Write tool로 `/Users/royaljelly/Documents/obsidian/til/<주제>(YYYY-MM-DD).md` 에 저장
-2. 세션 플래그 삭제: Bash로 `rm ~/.claude/til-session` 실행
-3. 저장 완료 알림: "✓ `til/<파일명>` 저장됨"
+1. 세션 파일에서 vault root 읽기: `cat ~/.claude/til-session`
+2. `til/` 서브폴더 없으면 생성: `mkdir -p <vault_root>/til`
+3. Write tool로 `<vault_root>/til/<주제>(YYYY-MM-DD).md` 에 저장
+4. 세션 플래그 삭제: Bash로 `rm ~/.claude/til-session` 실행
+5. 저장 완료 알림: "✓ `<vault_root>/til/<파일명>` 저장됨"
 
 동일 경로 파일이 이미 존재하면 덮어쓰기 전에 유저에게 확인.
 
