@@ -25,7 +25,7 @@
 
 ```bash
 # 플러그인 설치
-claude plugin install https://github.com/royaljelly/chronicle
+claude plugin install https://github.com/r-jelly/chronicle
 
 # 설치 후 리로드
 /reload-plugins
@@ -92,7 +92,7 @@ chronicle/
 
 <div align="center">
 
-Made with ☕ by [R-Jelly](https://github.com/royaljelly)
+Made with ☕ by [R-Jelly](https://github.com/r-jelly)
 
 *Claude Code Plugin · MIT License*
 
