@@ -36,23 +36,30 @@ grep -iE "vault|obsidian|til" "$(pwd)/CLAUDE.md" 2>/dev/null | head -5
 
 ### Step 2: Confirm or Ask
 
+먼저 컨텍스트에 `[TIL Config] Last used vault: <path>` 가 있는지 확인 (SessionStart 훅이 주입).
+
+**Case 0 — 이전 설정 있음 (최우선):**
+> "`<경로>/til/` 에 저장할까요? (지난 세션과 동일) 다른 곳을 원하면 경로를 알려줘요."
+
 **Case A — 하나의 경로 발견:**
-유저에게 바로 보여주고 확인:
 > "`<경로>/til/` 에 저장할까요? 다른 곳을 원하면 경로를 알려줘요."
 
 **Case B — 여러 경로 발견:**
-선택지 제시:
 > "TIL을 어디에 저장할까요?\n1. `<경로1>/til/`\n2. `<경로2>/til/`\n3. 직접 입력"
 
 **Case C — 감지 실패:**
 > "TIL을 저장할 폴더를 알려줘요. (예: `~/Documents/obsidian`, `~/notes`)"
 
-### Step 3: Create Session Flag
+### Step 3: Create Session Flag & Save Config
 
-경로 확정 후 — 선택된 경로를 vault root로:
+경로 확정 후:
 
 ```bash
+# 세션 플래그 생성
 echo "<확정된_vault_root>" > ~/.claude/til-session
+
+# 설정 파일에 경로 저장 (다음 세션에서 재사용)
+python3 -c "import json; json.dump({'vault_path': '<확정된_vault_root>'}, open('$HOME/.claude/til-config.json', 'w'))"
 ```
 
 그 다음 ONLY this one question:
