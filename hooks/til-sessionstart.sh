@@ -26,7 +26,14 @@ escape_json() {
     printf '%s' "$s"
 }
 
-MSG="[TIL Config] Last used vault: ${VAULT_PATH}"
+SESSION_FILE="$HOME/.claude/til-session"
+
+if [ -f "$SESSION_FILE" ]; then
+    MSG="[TIL Config] Last used vault: ${VAULT_PATH}\n[TIL Incomplete Session] 이전 TIL 세션이 저장되지 않은 채로 끝났어요. /til을 실행하면 Claude에게 이어서 작성할지 물어봐요."
+else
+    MSG="[TIL Config] Last used vault: ${VAULT_PATH}"
+fi
+
 ESCAPED=$(escape_json "$MSG")
 printf '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"%s"}}\n' "$ESCAPED"
 exit 0

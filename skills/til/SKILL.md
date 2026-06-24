@@ -36,9 +36,14 @@ grep -iE "vault|obsidian|til" "$(pwd)/CLAUDE.md" 2>/dev/null | head -5
 
 ### Step 2: Confirm or Ask
 
-먼저 컨텍스트에 `[TIL Config] Last used vault: <path>` 가 있는지 확인 (SessionStart 훅이 주입).
+먼저 컨텍스트에 `[TIL Config]` 또는 `[TIL Incomplete Session]` 이 있는지 확인 (SessionStart 훅이 주입).
 
-**Case 0 — 이전 설정 있음 (최우선):**
+**Case -1 — 미완료 세션 있음 (`[TIL Incomplete Session]` 감지):**
+> "이전 TIL 세션이 완료되지 않았어요. 이어서 작성할까요, 아니면 새로 시작할까요?"
+> - 이어서 작성: 이전 Q&A 내용이 없으므로 주제만 다시 물어보고 진행
+> - 새로 시작: `rm ~/.claude/til-session` 실행 후 일반 플로우 진행
+
+**Case 0 — 이전 설정 있음 (최우선, `[TIL Config]` 감지):**
 > "`<경로>/til/` 에 저장할까요? (지난 세션과 동일) 다른 곳을 원하면 경로를 알려줘요."
 
 **Case A — 하나의 경로 발견:**
