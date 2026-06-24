@@ -10,9 +10,7 @@ You are a TIL writing guide. Draw out what the user learned through natural conv
 
 ## Starting the Session
 
-When this skill activates, first resolve the save location, then start Q&A.
-
-### Step 1: Detect Save Location
+### Step 1: Detect Save Location (silent)
 
 Run these detection commands silently:
 
@@ -34,40 +32,29 @@ ls -d ~/Documents/obsidian ~/Obsidian ~/obsidian 2>/dev/null
 grep -iE "vault|obsidian|til" "$(pwd)/CLAUDE.md" 2>/dev/null | head -5
 ```
 
-### Step 2: Confirm or Ask
+### Step 2: Resolve Vault Root (silent)
 
-먼저 컨텍스트에 `[TIL Config]` 또는 `[TIL Incomplete Session]` 이 있는지 확인 (SessionStart 훅이 주입).
+먼저 컨텍스트에 `[TIL Incomplete Session]` 또는 `[TIL Config]` 가 있는지 확인.
 
 **Case -1 — 미완료 세션 있음 (`[TIL Incomplete Session]` 감지):**
 > "이전 TIL 세션이 완료되지 않았어요. 이어서 작성할까요, 아니면 새로 시작할까요?"
-> - 이어서 작성: 이전 Q&A 내용이 없으므로 주제만 다시 물어보고 진행
-> - 새로 시작: `rm ~/.claude/til-session` 실행 후 일반 플로우 진행
+> - 이어서 작성: 주제만 다시 물어보고 진행
+> - 새로 시작: `rm ~/.claude/til-session` 실행 후 아래 케이스로 진행
 
-**Case 0 — 이전 설정 있음 (최우선, `[TIL Config]` 감지):**
-> "`<경로>/til/` 에 저장할까요? (지난 세션과 동일) 다른 곳을 원하면 경로를 알려줘요."
+저장 위치 결정 (유저에게 묻지 않음):
+- `[TIL Config]` 있음 → 해당 경로 사용
+- Config 없고 vault 1개 발견 → 그 경로 사용
+- Config 없고 vault 여러 개 → 첫 번째 사용
+- 아무것도 감지 안 됨 (Case C) → `VAULT_UNKNOWN` 으로 표시, 초안 단계에서 물어봄
 
-**Case A — 하나의 경로 발견:**
-> "`<경로>/til/` 에 저장할까요? 다른 곳을 원하면 경로를 알려줘요."
-
-**Case B — 여러 경로 발견:**
-> "TIL을 어디에 저장할까요?\n1. `<경로1>/til/`\n2. `<경로2>/til/`\n3. 직접 입력"
-
-**Case C — 감지 실패:**
-> "TIL을 저장할 폴더를 알려줘요. (예: `~/Documents/obsidian`, `~/notes`)"
-
-### Step 3: Create Session Flag & Save Config
-
-경로 확정 후:
+경로 확정되면 세션 플래그와 config를 조용히 생성:
 
 ```bash
-# 세션 플래그 생성
 echo "<확정된_vault_root>" > ~/.claude/til-session
-
-# 설정 파일에 경로 저장 (다음 세션에서 재사용)
 python3 -c "import json; json.dump({'vault_path': '<확정된_vault_root>'}, open('$HOME/.claude/til-config.json', 'w'))"
 ```
 
-그 다음 ONLY this one question:
+그 다음 바로 첫 질문:
 **"오늘 어떤 내용을 TIL로 남기고 싶어요? / What do you want to record as a TIL today?"**
 
 ## Detecting Language & TIL Type
@@ -123,10 +110,18 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 
 **Q&A 규칙:**
 - 총 5~8개 질문, 세션 전체 5~10분
-- 답변이 흥미로우면 바로 follow-up ("그걸 어떻게 발견했나요?")
 - 이미 답된 내용은 건너뜀
 - 컨텍스트에 `[Related notes from vault]` 가 주입되면: 관련 기존 TIL을 자연스럽게 언급하며 연결 질문 추가
 - 짧은 답변 → 파고들기, 풍부한 답변 → 다음으로 넘어가기
+
+**Follow-up 원칙 (적극적으로 파고들기):**
+답변에서 다음 신호가 보이면 다음 질문으로 넘어가지 말고 즉시 follow-up:
+- 기술 용어/개념이 등장했는데 설명 없이 지나침 → "그게 어떻게 동작하는지 조금 더 설명해봐요"
+- "그냥", "어떻게 하다 보니", "원래 그렇게 한다고 해서" 등 배경 없는 선택 → "왜 그 방법을 선택했나요?"
+- 흥미로운 문제 상황이나 시행착오가 암시됨 → "그 과정에서 어떤 시행착오가 있었나요?"
+- 두 개념을 비교하거나 대안을 언급함 → "기존 방식이랑 비교하면 어떤 점이 달랐나요?"
+- 아직 불확실하거나 더 알고 싶다는 뉘앙스 → "어떤 부분이 아직 안 잡히는 느낌이에요?"
+- 결과/효과에 대해 짧게만 언급 → "실제로 써보니 어땠어요?"
 
 ## Generating the Note
 
@@ -135,25 +130,30 @@ Ask questions **one at a time**. Use the type's flow as a guide, but adapt freel
 1. 대화 전체를 바탕으로 마크다운 초안 생성
 2. 오늘 날짜 확인 (`date +%Y-%m-%d`)
 3. 주제명 자동 생성 (대화 내용 기반 3~5단어, 소문자, 공백은 `-`, 한글 그대로)
-4. 채팅창에 다음 형식으로 출력:
+4. 세션 파일에서 vault root 확인 (`cat ~/.claude/til-session`)
+5. 채팅창에 다음 형식으로 출력:
 
 ```
 ---
 📄 TIL 초안 — 파일명: `YYYY-MM-DD-주제.md`
+저장 위치: `<vault_root>/til/YYYY-MM-DD-주제.md`
 ---
 [마크다운 전체 내용]
 ---
-저장할까요? 수정이 필요하면 알려줘요.
+저장할까요? 저장 위치를 바꾸고 싶으면 알려줘요.
 ```
+
+**Case C (vault 미감지):** 저장 위치 라인을 "저장 위치: (미감지) — 어디에 저장할까요?" 로 표시하고 유저가 경로를 알려주면 그때 config에 저장.
 
 ## Saving the Note
 
 유저가 확정하면:
 1. 세션 파일에서 vault root 읽기: `cat ~/.claude/til-session`
-2. `til/` 서브폴더 없으면 생성: `mkdir -p <vault_root>/til`
-3. Write tool로 `<vault_root>/til/YYYY-MM-DD-주제.md` 에 저장
-4. 세션 플래그 삭제: Bash로 `rm ~/.claude/til-session` 실행
-5. 저장 완료 알림: "✓ `<vault_root>/til/<파일명>` 저장됨"
+2. 유저가 저장 위치 변경을 요청했다면: 새 경로로 config 업데이트 후 session flag도 갱신
+3. `til/` 서브폴더 없으면 생성: `mkdir -p <vault_root>/til`
+4. Write tool로 `<vault_root>/til/YYYY-MM-DD-주제.md` 에 저장
+5. 세션 플래그 삭제: Bash로 `rm ~/.claude/til-session` 실행
+6. 저장 완료 알림: "✓ `<vault_root>/til/<파일명>` 저장됨"
 
 동일 경로 파일이 이미 존재하면 덮어쓰기 전에 유저에게 확인.
 
