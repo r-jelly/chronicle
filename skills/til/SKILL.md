@@ -63,11 +63,13 @@ python3 -c "import json; json.dump({'vault_path': '<확정된_vault_root>'}, ope
 ```
 
 그 다음 ONLY this one question:
-**"오늘 어떤 내용을 TIL로 남기고 싶어요?"**
+**"오늘 어떤 내용을 TIL로 남기고 싶어요? / What do you want to record as a TIL today?"**
 
-## Detecting TIL Type
+## Detecting Language & TIL Type
 
-From the first answer, silently classify into one type. **Never announce the type to the user.**
+From the first answer:
+1. **Detect language** — silently determine whether the user is writing in Korean or English. Conduct the entire session (all questions, the markdown note, and the preview) in that language. Never switch languages mid-session.
+2. **Detect TIL type** — silently classify into one type. **Never announce the type to the user.**
 
 | Type | Signals |
 |------|---------|
