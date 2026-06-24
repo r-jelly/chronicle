@@ -1,12 +1,12 @@
 {
-  "name": "til",
+  "name": "chronicle",
   "version": "0.1.0",
-  "description": "Interactive TIL (Today I Learned) writer for Obsidian vault. Guides you through Q&A to create structured notes in 5-10 minutes.",
+  "description": "A growing collection of skills for organizing your personal records — TIL notes, reflections, and more.",
   "author": {
     "name": "R-Jelly",
     "url": "https://github.com/royaljelly"
   },
   "license": "MIT",
-  "repository": "https://github.com/royaljelly/til-plugin",
-  "keywords": ["til", "obsidian", "notes", "learning", "journal"]
+  "repository": "https://github.com/royaljelly/chronicle",
+  "keywords": ["til", "notes", "journal", "obsidian", "learning", "chronicle"]
 }
