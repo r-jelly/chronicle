@@ -32,16 +32,15 @@ SEARCH_TERMS=$(echo "$USER_PROMPT" \
 
 [ -z "$SEARCH_TERMS" ] && exit 0
 
-# Search vault (ripgrep preferred, grep fallback)
+# Search all subdirectories under vault root (excluding hidden dirs like .obsidian)
 if command -v rg >/dev/null 2>&1; then
-    RESULTS=$(rg -l -e "$SEARCH_TERMS" \
-        "$VAULT_PATH/til" \
-        "$VAULT_PATH/study" \
+    RESULTS=$(rg -l --glob '!.*' -e "$SEARCH_TERMS" \
+        "$VAULT_PATH" \
         2>/dev/null | head -5 || true)
 else
     RESULTS=$(grep -rl -E "$SEARCH_TERMS" \
-        "$VAULT_PATH/til" \
-        "$VAULT_PATH/study" \
+        "$VAULT_PATH" \
+        --exclude-dir='.*' \
         2>/dev/null | head -5 || true)
 fi
 
