@@ -1,0 +1,19 @@
+# Superpowers dev artifacts
+.superpowers/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Node (if any tooling added later)
+node_modules/
